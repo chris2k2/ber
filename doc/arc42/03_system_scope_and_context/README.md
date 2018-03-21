@@ -1,6 +1,6 @@
 
-= System Scipe and Context
+# System Scipe and Context
 
-== Business Context
+## Business Context
 
-== Technical Context
+## Technical Context

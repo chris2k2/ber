@@ -1,3 +1,3 @@
 
-= Solution Strategy
+# Solution Strategy
 

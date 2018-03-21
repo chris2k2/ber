@@ -1,11 +1,11 @@
 
-= Introduction and Goals
+# Introduction and Goals
 
-== Requirements Overview
+## Requirements Overview
 
-== Quality Goals
+## Quality Goals
 
-== Stakeholders
+## Stakeholders
 
 | Role/Name     | Contact     | Expectations   |
 | ------------- |-------------| -----|

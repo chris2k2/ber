@@ -1,8 +1,8 @@
 
-= Building Block View
+# Building Block View
 
-== Overall System
+## Overall System
 
-== Black Box 1
+## Black Box 1
 
-== Black Box 2
+## Black Box 2
