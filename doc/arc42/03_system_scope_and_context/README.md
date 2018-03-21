@@ -1,6 +1,6 @@
-# Kontextabgrenzung
+# System Scope and Context
 
-Folgende Systeme interagieren mit BER:
+The following systems interact with BER:
 
 ![Kontext](../images/context.png)
 
