@@ -1,6 +1,6 @@
+# Kontextabgrenzung
 
-# System Scipe and Context
+Folgende Systeme interagieren mit BER:
 
-## Business Context
+![Kontext]{../images/context.png}
 
-## Technical Context
