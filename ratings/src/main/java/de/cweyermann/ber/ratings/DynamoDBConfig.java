@@ -1,4 +1,4 @@
-package de.cweyermann.ber.matches;
+package de.cweyermann.ber.ratings;
 
 import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +14,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 
 @Configuration
 @EnableAutoConfiguration
-@EnableDynamoDBRepositories(basePackages = "de.cweyermann.ber.matches.boundary")
+@EnableDynamoDBRepositories(basePackages = "de.cweyermann.ber.ratings.boundary")
 public class DynamoDBConfig {
 
     @Value("${amazon.aws.dynamodb.region}")
