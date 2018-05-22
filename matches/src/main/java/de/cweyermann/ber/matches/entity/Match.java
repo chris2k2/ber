@@ -36,5 +36,7 @@ public class Match {
     private Discipline discipline;
 
     private String result;
+    
+    private int leagueDepth;
 
 }

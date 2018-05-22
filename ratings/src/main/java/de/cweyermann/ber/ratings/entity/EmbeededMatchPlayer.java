@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @DynamoDBDocument
-public class Player {
+public class EmbeededMatchPlayer {
 
     private String name;
 

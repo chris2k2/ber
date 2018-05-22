@@ -1,12 +1,13 @@
 package de.cweyermann.ber.ratings.control;
 
-import java.util.List;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import de.cweyermann.ber.ratings.control.Elo.InitStrategy;
+import de.cweyermann.ber.ratings.control.Elo.ResultStrategy;
 import de.cweyermann.ber.ratings.entity.Match;
-import de.cweyermann.ber.ratings.entity.Player;
+import de.cweyermann.ber.ratings.entity.EmbeededMatchPlayer;
+import de.cweyermann.ber.ratings.entity.Result;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -19,6 +20,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Elo {
 
+
+    
+    
     private ResultStrategy result;
     private InitStrategy init;
     private KStrategy kStragey;
@@ -32,7 +36,7 @@ public class Elo {
     @FunctionalInterface
     public interface InitStrategy
     {
-        int getInitialScoreByMatch(Match match, Player player);
+        int getInitialScoreByMatch(Match match, EmbeededMatchPlayer player);
     }
 
     @FunctionalInterface
@@ -41,10 +45,7 @@ public class Elo {
         int getKFactor(Match match);
     }
     
-    public static enum Result 
-    {
-        HOME_3_SET, HOME_2_SET, AWAY_3_SET, AWAY_2_SET, NO_RESULT
-    }
+
     
     public Elo(ResultStrategy result, InitStrategy init, KStrategy kStragey)
     {
@@ -53,17 +54,17 @@ public class Elo {
         this.kStragey = kStragey;
     }
 
-    public Pair<Integer, Integer> calc(int player1Rating, int player2Rating, Result outcome, Match match) {
+    public int calcDifference(int player1Rating, int player2Rating, Result outcome, Match match) {
         double actualScore = result.getScoreModifier(outcome);
         int k = kStragey.getKFactor(match);
         
         // calculate expected outcome
         int newRating1 = calcRating(player1Rating, player2Rating, k, actualScore);
-        int newRating2 = calcRating(player2Rating, player1Rating, k, 1 - actualScore);
+        int diff = newRating1 - player1Rating;
         
-        log.info("New Rating k={}: [{}, {}] -> [{}, {}]", k, player1Rating, player2Rating, newRating1, newRating2);
+        log.info("New Rating k={}: [{}, {}] -> [{}, {}]", k, player1Rating, player2Rating, newRating1, player2Rating - diff);
         
-        return new ImmutablePair<Integer, Integer>(newRating1, newRating2);
+        return diff;
     }
 
     private int calcRating(int player1Rating, int player2Rating, int k, double actualScore) {
