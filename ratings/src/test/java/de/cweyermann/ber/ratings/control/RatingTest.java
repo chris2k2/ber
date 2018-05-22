@@ -4,31 +4,77 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import de.cweyermann.ber.ratings.boundary.PlayersClient;
 import de.cweyermann.ber.ratings.boundary.Repository;
 import de.cweyermann.ber.ratings.entity.Match;
-import de.cweyermann.ber.ratings.entity.EmbeededMatchPlayer;
+import de.cweyermann.ber.ratings.entity.Match.Status;
+import de.cweyermann.ber.ratings.entity.Player;
 import de.cweyermann.ber.ratings.entity.Result;
 
 public class RatingTest {
+
+    private PlayersClient client;
+
+    @Before
+    public void setup() {
+        client = new PlayersClient() {
+
+            Map<String, Player> map = new HashMap<>();
+
+            @Override
+            public void update(String id, Player player) {
+                map.put(id, player);
+            }
+
+            @Override
+            public Player getSingle(String id) {
+                return map.get(id);
+            }
+
+            @Override
+            public Iterable<Player> getAll() {
+                return () -> map.values().iterator();
+            }
+        };
+
+        client.update("1", build("1", 1000, 1000));
+        client.update("2", build("2", 1000, 1000));
+        client.update("11", build("11", 1000, 1000));
+        client.update("12", build("12", 1000, 500));
+        client.update("21", build("21", 1000, 1000));
+        client.update("22", build("22", 1000, 500));
+    }
+
+    private Player build(String id, int ratingSingles, int ratingDoubles) {
+        Player p1 = new Player();
+        p1.setId(id);
+
+        p1.setRatingSingles(ratingSingles);
+        p1.setRatingDoubles(ratingDoubles);
+        return p1;
+    }
 
     @Test
     public void singlesHomePlayer_won() {
         Repository repo = mock(Repository.class);
         Match match = playSingles("21:10 21:10", repo);
         mockRepo(repo, match);
-        
+
         Rating rating = new Rating(repo, new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8));
-        rating.addAll();
+                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE),
+                client);
+        rating.updateUnratedMatches();
 
         assertTrue(match.getHomePlayers().get(0).getAfterRating() > 1000);
         assertTrue(match.getAwayPlayers().get(0).getAfterRating() < 1000);
@@ -41,8 +87,9 @@ public class RatingTest {
         mockRepo(repo, match);
 
         Rating rating = new Rating(repo, new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8));
-        rating.addAll();
+                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE),
+                client);
+        rating.updateUnratedMatches();
 
         assertTrue(match.getHomePlayers().get(0).getAfterRating() < 1000);
         assertTrue(match.getAwayPlayers().get(0).getAfterRating() > 1000);
@@ -55,8 +102,9 @@ public class RatingTest {
         mockRepo(repo, match);
 
         Rating rating = new Rating(repo, new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8));
-        rating.addAll();
+                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE),
+                client);
+        rating.updateUnratedMatches();
 
         assertTrue(match.getHomePlayers().get(0).getAfterRating() < 1000);
         assertTrue(match.getHomePlayers().get(1).getAfterRating() < 500);
@@ -72,9 +120,11 @@ public class RatingTest {
         mockRepo(repo, match);
 
         Rating rating = new Rating(repo, new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8));
-        rating.addAll();
+                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE),
+                client);
+        rating.updateUnratedMatches();
 
+        assertEquals(Status.RATED, match.getProcessStatus());
         verify(repo).save(match);
     }
 
@@ -88,8 +138,8 @@ public class RatingTest {
         when(elo.calcDifference(anyInt(), anyInt(), any(Result.class), any(Match.class)))
                 .thenReturn(10);
 
-        Rating rating = new Rating(repo, elo);
-        rating.addAll();
+        Rating rating = new Rating(repo, elo, client);
+        rating.updateUnratedMatches();
 
         assertEquals(1010, match.getHomePlayers().get(0).getAfterRating().intValue());
         assertEquals(990, match.getAwayPlayers().get(0).getAfterRating().intValue());
@@ -105,41 +155,60 @@ public class RatingTest {
         when(elo.calcDifference(anyInt(), anyInt(), any(Result.class), any(Match.class)))
                 .thenReturn(-50);
 
-        Rating rating = new Rating(repo, elo);
-        rating.addAll();
+        Rating rating = new Rating(repo, elo, client);
+        rating.updateUnratedMatches();
 
-        verify(elo).calcDifference(eq(750), eq(750), any(Result.class), any(Match.class));
+        verify(elo).calcDoublesDifference(anyInt(), anyInt(), anyInt(), anyInt(), any(Result.class), any(Match.class));
     }
 
     @Test
     public void twoMatches_differentPlayers() {
         Repository repo = mock(Repository.class);
-        
+
         Match match1 = playSingles("21:10 30:29", repo);
         Match match2 = playDoubles("21:10 21:23 21:2", repo);
         mockRepo(repo, match1, match2);
-        
+
         Rating rating = new Rating(repo, new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8));
-        rating.addAll();
+                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE),
+                client);
+        rating.updateUnratedMatches();
 
         assertTrue(match1.getHomePlayers().get(0).getAfterRating() > 1000);
         assertTrue(match2.getHomePlayers().get(0).getAfterRating() > 1000);
     }
 
+    @Test
+    public void twoMatches_samePlayer() {
+        Repository repo = mock(Repository.class);
+
+        Match match1 = playSingles("21:10 30:29", repo);
+        Match match2 = playSingles("21:10 30:29", repo);
+        mockRepo(repo, match1, match2);
+
+        Elo elo = mock(Elo.class);
+        when(elo.calcDifference(anyInt(), anyInt(), any(Result.class), any(Match.class)))
+                .thenReturn(-10);
+        Rating rating = new Rating(repo, elo, client);
+        rating.updateUnratedMatches();
+
+        assertEquals(980, client.getSingle("1").getRatingSingles().intValue());
+    }
+
     private Match playSingles(String result, Repository repo) {
         Match match = new Match();
-        EmbeededMatchPlayer player1 = new EmbeededMatchPlayer();
+        Match.Player player1 = new Match.Player();
         player1.setId("1");
         player1.setRating(1000);
 
-        EmbeededMatchPlayer player2 = new EmbeededMatchPlayer();
+        Match.Player player2 = new Match.Player();
         player2.setId("2");
         player2.setRating(1000);
 
         match.setHomePlayers(Arrays.asList(player1));
         match.setAwayPlayers(Arrays.asList(player2));
         match.setResult(result);
+        match.setDiscipline("WS");
 
         return match;
     }
@@ -150,23 +219,24 @@ public class RatingTest {
 
     private Match playDoubles(String result, Repository repo) {
         Match match = new Match();
-        EmbeededMatchPlayer player1 = new EmbeededMatchPlayer();
+        Match.Player player1 = new Match.Player();
         player1.setId("11");
         player1.setRating(1000);
-        EmbeededMatchPlayer player11 = new EmbeededMatchPlayer();
+        Match.Player player11 = new Match.Player();
         player11.setId("12");
         player11.setRating(500);
 
-        EmbeededMatchPlayer player2 = new EmbeededMatchPlayer();
+        Match.Player player2 = new Match.Player();
         player2.setId("21");
         player2.setRating(1000);
-        EmbeededMatchPlayer player21 = new EmbeededMatchPlayer();
+        Match.Player player21 = new Match.Player();
         player21.setId("22");
         player21.setRating(500);
 
         match.setHomePlayers(Arrays.asList(player1, player11));
         match.setAwayPlayers(Arrays.asList(player2, player21));
         match.setResult(result);
+        match.setDiscipline("MD");
         return match;
     }
 

@@ -1,57 +1,117 @@
 package de.cweyermann.ber.ratings.control;
 
-import java.util.List;
+import static java.util.stream.Collectors.toList;
 
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.cweyermann.ber.ratings.boundary.PlayersClient;
 import de.cweyermann.ber.ratings.boundary.Repository;
 import de.cweyermann.ber.ratings.entity.Match;
-import de.cweyermann.ber.ratings.entity.EmbeededMatchPlayer;
+import de.cweyermann.ber.ratings.entity.Match.Status;
+import de.cweyermann.ber.ratings.entity.Player;
 import de.cweyermann.ber.ratings.entity.Result;
 
 public class Rating {
 
     private Repository repo;
     private Elo eloAlgo;
+    private PlayersClient client;
 
     @Autowired
-    public Rating(Repository repo, Elo eloAlgo) {
+    public Rating(Repository repo, Elo eloAlgo, PlayersClient client) {
         this.repo = repo;
         this.eloAlgo = eloAlgo;
+        this.client = client;
     }
 
-    public void addAll() {
+    public void updateUnratedMatches() {
         List<Match> matches = repo.getAllUnratedMatches();
 
         for (Match match : matches) {
             Result res = Result.fromResultString(match.getResult());
 
-            EmbeededMatchPlayer player11 = match.getHomePlayers().get(0);
-            EmbeededMatchPlayer player21 = match.getAwayPlayers().get(0);
-
-            if (match.getHomePlayers().size() == 1) {
-                int diff = eloAlgo.calcDifference(player11.getRating(), player21.getRating(), res,
-                        match);
-
-                player11.setAfterRating(player11.getRating() + diff);
-                player21.setAfterRating(player21.getRating() - diff);
-            } else {
-                EmbeededMatchPlayer player12 = match.getHomePlayers().get(1);
-                EmbeededMatchPlayer player22 = match.getAwayPlayers().get(1);
-
-                int average1 = (player11.getRating() + player12.getRating()) / 2;
-                int average2 = (player21.getRating() + player22.getRating()) / 2;
-
-                int diff = eloAlgo.calcDifference(average1, average2, res, match);
-
-                player11.setAfterRating(player11.getRating() + diff);
-                player12.setAfterRating(player12.getRating() + diff);
-                player21.setAfterRating(player21.getRating() - diff);
-                player22.setAfterRating(player22.getRating() - diff);
+            // it's a Singles match
+            List<Player> players = new ArrayList<>();
+            if (match.getDiscipline().endsWith("S")) {
+                players = calcNewRatings(match, res, Player::getRatingSingles, Player::setRatingSingles);
+            } else if (match.getDiscipline().endsWith("D")) {
+                players = calcNewRatings(match, res, Player::getRatingDoubles, Player::setRatingDoubles);
+            } else if (match.getDiscipline().equals("MX")) {
+                players = calcNewRatings(match, res, Player::getRatingMixed, Player::setRatingMixed);
             }
 
+            players.forEach(p -> client.update(p.getId(), p));
+            match.setProcessStatus(Status.RATED);
             repo.save(match);
         }
+    }
+
+    private List<Player> calcNewRatings(Match match, Result res, Function<Player, Integer> getRating,
+            BiConsumer<Player, Integer> setRating) {
+        List<Player> homePlayers = match.getHomePlayers()
+                .stream()
+                .map(mp -> client.getSingle(mp.getId()))
+                .collect(toList());
+
+        List<Player> awayPlayers = match.getAwayPlayers()
+                .stream()
+                .map(mp -> client.getSingle(mp.getId()))
+                .collect(toList());
+
+        List<Integer> homeRatings = homePlayers.stream().map(getRating).collect(
+                Collectors.toList());
+
+        List<Integer> awayRatings = awayPlayers.stream().map(getRating).collect(toList());
+
+        int diff = calcDifference(match, res, homeRatings, awayRatings);
+
+        for (int i = 0; i < homeRatings.size(); i++) {
+            Player homeDbPlayer = homePlayers.get(i);
+            Match.Player homeMatchPlayer = match.getHomePlayers().get(i);
+            int oldHomeRating = homeRatings.get(i);
+
+            update(setRating, homeDbPlayer, homeMatchPlayer, oldHomeRating, oldHomeRating + diff);
+
+            Player awayDbPlayer = awayPlayers.get(i);
+            Match.Player awayMatchPlayer = match.getAwayPlayers().get(i);
+            int oldAwayRating = homeRatings.get(i);
+
+            update(setRating, awayDbPlayer, awayMatchPlayer, oldAwayRating, oldAwayRating - diff);
+        }
+        
+        return combineList(homePlayers, awayPlayers);
+    }
+
+    private List<Player> combineList(List<Player> homePlayers, List<Player> awayPlayers) {
+        List<Player> all = new ArrayList<>();
+        all.addAll(homePlayers);
+        all.addAll(awayPlayers);
+        return all;
+    }
+
+    private int calcDifference(Match match, Result res, List<Integer> homeRatings,
+            List<Integer> awayRatings) {
+        int diff = 0;
+        if (homeRatings.size() == 1) {
+            diff = eloAlgo.calcDifference(homeRatings.get(0), awayRatings.get(0), res, match);
+        } else if (homeRatings.size() == 2) {
+            diff = eloAlgo.calcDoublesDifference(homeRatings.get(0), homeRatings.get(1),
+                    awayRatings.get(0), awayRatings.get(1), res, match);
+        }
+        return diff;
+    }
+
+    private void update(BiConsumer<Player, Integer> setRating, Player homeDbPlayer,
+            Match.Player homeMatchPlayer, int oldHomeRating, int newHomeRating) {
+        homeMatchPlayer.setRating(oldHomeRating);
+        homeMatchPlayer.setAfterRating(newHomeRating);
+        setRating.accept(homeDbPlayer, newHomeRating);
+
     }
 }
