@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import de.cweyermann.ber.ratings.boundary.PlayersClient;
 import de.cweyermann.ber.ratings.boundary.Repository;
+import de.cweyermann.ber.ratings.control.Elo.InitStrategy;
 import de.cweyermann.ber.ratings.entity.Match;
 import de.cweyermann.ber.ratings.entity.Match.Status;
 import de.cweyermann.ber.ratings.entity.Player;
@@ -24,13 +25,17 @@ import de.cweyermann.ber.ratings.entity.Result;
 
 public class RatingTest {
 
+
+    public static final InitStrategy EVERYONE_300 = (x, y) -> 300;
+    
     private PlayersClient client;
+    private Map<String, Player> map;
 
     @Before
     public void setup() {
-        client = new PlayersClient() {
+        map = new HashMap<>();
 
-            Map<String, Player> map = new HashMap<>();
+        client = new PlayersClient() {
 
             @Override
             public void update(String id, Player player) {
@@ -144,6 +149,24 @@ public class RatingTest {
         assertEquals(1010, match.getHomePlayers().get(0).getAfterRating().intValue());
         assertEquals(990, match.getAwayPlayers().get(0).getAfterRating().intValue());
     }
+    
+
+    @Test
+    public void singlesNoRating_initCalled() {
+        Repository repo = mock(Repository.class);
+        Match match = playSingles("11:8 11:13 8:11 11:2 11:2", repo);
+        mockRepo(repo, match);
+
+        map.clear();
+
+        Rating rating = new Rating(repo, new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
+                EVERYONE_300, EloStrategies.K_CONST8, EloStrategies.AVERAGE),
+                client);
+        rating.updateUnratedMatches();
+
+        assertTrue(match.getHomePlayers().get(0).getAfterRating().intValue() > 300);
+        assertTrue(match.getAwayPlayers().get(0).getAfterRating().intValue() < 300);
+    }
 
     @Test
     public void doubles_eloIsUsedWithAverage() {
@@ -212,6 +235,7 @@ public class RatingTest {
 
         return match;
     }
+    
 
     private void mockRepo(Repository repo, Match... match) {
         when(repo.getAllUnratedMatches()).thenReturn(Arrays.asList(match));

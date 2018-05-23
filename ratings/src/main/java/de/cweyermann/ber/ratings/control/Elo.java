@@ -47,6 +47,10 @@ public class Elo {
         this.doublesStrategy = doublesStrategy;
     }
 
+    public int init(Match match, Match.Player player) {
+        return init.getInitialScoreByMatch(match, player);
+    }
+
     public int calcDifference(int player1Rating, int player2Rating, Result outcome, Match match) {
         double actualScore = result.getScoreModifier(outcome);
         int k = kStragey.getKFactor(match);
@@ -66,7 +70,7 @@ public class Elo {
 
         int team1rating = doublesStrategy.getEloRatingForDoubles(player1Rating, player2Rating);
         int team2rating = doublesStrategy.getEloRatingForDoubles(player3rating, player4rating);
-        
+
         return calcDifference(team1rating, team2rating, outcome, match);
     }
 
