@@ -16,6 +16,7 @@ import de.cweyermann.ber.ratings.entity.Match;
 import de.cweyermann.ber.ratings.entity.Match.Status;
 import de.cweyermann.ber.ratings.entity.Player;
 import de.cweyermann.ber.ratings.entity.Result;
+import io.vavr.Tuple2;
 
 public class Rating {
 
@@ -98,16 +99,21 @@ public class Rating {
             
             if(players.get(i) == null)
             {
-                Player p = new Player();
-                p.setId(matchPlayer.getId());
-                p.setName(matchPlayer.getName());
-                p.setRatingSingles(eloAlgo.init(match, matchPlayer));
-                p.setRatingDoubles(eloAlgo.init(match, matchPlayer));
-                p.setRatingMixed(eloAlgo.init(match, matchPlayer));
-                client.update(p.getId(), p);
+                Player p = map(match, matchPlayer);
                 players.set(i, p);
             }
         }
+    }
+
+    private Player map(Match match, Match.Player matchPlayer) {
+        Player p = new Player();
+        p.setId(matchPlayer.getId());
+        p.setName(matchPlayer.getName());
+        p.setRatingSingles(eloAlgo.init(match, matchPlayer));
+        p.setRatingDoubles(eloAlgo.init(match, matchPlayer));
+        p.setRatingMixed(eloAlgo.init(match, matchPlayer));
+        client.update(p.getId(), p);
+        return p;
     }
 
     private List<Player> combineList(List<Player> homePlayers, List<Player> awayPlayers) {
