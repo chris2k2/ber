@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.oracle.tools.packager.Log;
+
+import de.cweyermann.ber.tournaments.boundary.DynmoDbTournament.ProccessingStatus;
 import de.cweyermann.ber.tournaments.entity.Tournament;
-import de.cweyermann.ber.tournaments.entity.Tournament.ProccessingStatus;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Supported use cases:
@@ -32,18 +36,22 @@ import de.cweyermann.ber.tournaments.entity.Tournament.ProccessingStatus;
  * @author chris
  *
  */
+@Log4j2
 @RestController
 public class Endpoint {
 
     @Autowired
     private Repository repo;
 
+    @Autowired
+    private ModelMapper mapper;
+
     @GetMapping(path = "tournaments", produces = "application/json")
     public List<Tournament> getAll(
             @RequestParam(name = "status", required = false) ProccessingStatus status,
             @RequestParam(name = "latest", required = false) Boolean latest,
             @RequestParam(name = "source", required = false) String source) {
-        List<Tournament> result = Collections.emptyList();
+        List<DynmoDbTournament> result = Collections.emptyList();
         if (status == null && source == null && latest == null) {
             result = repo.findAll();
         } else if (status != null && source == null && latest == null) {
@@ -62,11 +70,16 @@ public class Endpoint {
             result = toList(repo.findFirstBySourceAndStatusOrderByEndDateDesc(source, status));
         }
 
-        return result;
+        List<Tournament> tournaments = new ArrayList<>();
+        for (DynmoDbTournament dynamoT : result) {
+            tournaments.add(mapper.map(dynamoT, Tournament.class));
+        }
+
+        return tournaments;
     }
 
-    private List<Tournament> toList(Optional<Tournament> opt) {
-        List<Tournament> res = new ArrayList<>();
+    private List<DynmoDbTournament> toList(Optional<DynmoDbTournament> opt) {
+        List<DynmoDbTournament> res = new ArrayList<>();
         if (opt.isPresent()) {
             res = Arrays.asList(opt.get());
         }
@@ -74,16 +87,31 @@ public class Endpoint {
         return res;
     }
 
-    @PostMapping(path = "tournaments/", consumes = "application/json")
+    @PostMapping(path = "tournaments", consumes = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addTournament(@RequestBody Tournament newTournament) {
-        repo.save(newTournament);
+    public void addTournaments(@RequestBody List<Tournament> newTournament) {
+        List<DynmoDbTournament> tournaments = new ArrayList<>();
+
+        for (Tournament t : newTournament) {
+            log.debug("Checking: " + t);
+
+            Optional<DynmoDbTournament> oldOne = repo.findById(t.getId());
+
+            if (!oldOne.isPresent() || oldOne.get().getStatus() != ProccessingStatus.DONE) {
+                tournaments.add(mapper.map(t, DynmoDbTournament.class));
+            }
+        }
+
+        if (!tournaments.isEmpty()) {
+            repo.saveAll(tournaments);
+        }
+
     }
 
     @PutMapping(path = "tournaments/{id}", consumes = "application/json")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void update(@RequestBody Tournament updatedTournament, @PathVariable("id") String id) {
         updatedTournament.setId(id);
-        repo.save(updatedTournament);
+        repo.save(mapper.map(updatedTournament, DynmoDbTournament.class));
     }
 }
