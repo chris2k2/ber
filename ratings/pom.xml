@@ -28,24 +28,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-batch</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-openfeign</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-batch</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -62,11 +50,6 @@
 			<artifactId>aws-java-sdk-dynamodb</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.github.derjust</groupId>
-			<artifactId>spring-data-dynamodb</artifactId>
-			<version>5.0.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
@@ -74,25 +57,6 @@
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
 			<version>0.7.4</version>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>DynamoDBLocal</artifactId>
-			<version>[1.11,2.0)</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.almworks.sqlite4java</groupId>
-			<artifactId>sqlite4java-win32-x64</artifactId>
-			<version>1.0.392</version>
-			<type>dll</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.almworks.sqlite4java</groupId>
-			<artifactId>sqlite4java</artifactId>
-			<version>1.0.392</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -103,6 +67,14 @@
 			<artifactId>vavr</artifactId>
 			<version>0.9.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-aws-messaging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -111,13 +83,6 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
 				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.batch</groupId>
-				<artifactId>spring-batch-core</artifactId>
-				<version>4.0.1.RELEASE</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
