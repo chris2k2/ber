@@ -8,7 +8,12 @@ import lombok.ToString;
 
 @Data
 @ToString
+@EqualsAndHashCode(of = { "homePlayers", "awayPlayers", "league", "result" })
 public class Match {
+
+    public enum Status {
+        RATED, DOING, UNRATED
+    }
 
     public enum Discipline {
         MS, MD, WS, WD, MX
@@ -21,6 +26,10 @@ public class Match {
         private String name;
 
         private String id;
+
+        private Integer oldRating;
+
+        private Integer newRating;
     }
 
     private List<Player> homePlayers;
@@ -36,7 +45,12 @@ public class Match {
     private Discipline discipline;
 
     private String result;
-    
+
     private int leagueDepth;
 
+    private Status processStatus = Status.UNRATED;
+
+    public String getMatchId() {
+        return hashCode() + "";
+    }
 }

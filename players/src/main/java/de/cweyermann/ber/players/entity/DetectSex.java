@@ -3,14 +3,19 @@ package de.cweyermann.ber.players.entity;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import de.cweyermann.ber.players.boundary.Repository;
 import de.cweyermann.ber.players.entity.Match.Discipline;
 import de.cweyermann.ber.players.entity.Player.Sex;
 
+@Component
 public class DetectSex {
 
     private Repository repo;
 
+    @Autowired
     public DetectSex(Repository repo) {
         this.repo = repo;
     }
