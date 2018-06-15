@@ -49,7 +49,9 @@ public class DynamoDbMatch {
 
     private String result;
     
-    private final Status processStatus = Status.UNRATED;
+    private Status processStatus = Status.UNRATED;
+    
+    private String matchId;
 
     public void fillPlayers() {
         if (homePlayers.size() == 1 && awayPlayers.size() == 1) {

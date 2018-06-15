@@ -2,9 +2,12 @@ package de.cweyermann.ber.matches.boundary.persistence;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.socialsignin.spring.data.dynamodb.repository.EnableScan;
 import org.springframework.data.repository.CrudRepository;
+
+import de.cweyermann.ber.matches.boundary.persistence.DynamoDbMatch.Status;
 
 @EnableScan
 public interface Repository extends CrudRepository<DynamoDbMatch, String> {
@@ -26,4 +29,12 @@ public interface Repository extends CrudRepository<DynamoDbMatch, String> {
 
         return matches;
     }
+
+    Optional<DynamoDbMatch> findByMatchId(String id);
+
+    default List<DynamoDbMatch> getAllUnratedMatches() {
+        return findByProcessStatus(Status.UNRATED);
+    }
+
+    public List<DynamoDbMatch> findByProcessStatus(Status status);
 }
