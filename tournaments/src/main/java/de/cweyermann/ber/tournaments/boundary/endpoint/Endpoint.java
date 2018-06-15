@@ -1,4 +1,4 @@
-package de.cweyermann.ber.tournaments.boundary;
+package de.cweyermann.ber.tournaments.boundary.endpoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.oracle.tools.packager.Log;
-
-import de.cweyermann.ber.tournaments.boundary.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
 import de.cweyermann.ber.tournaments.entity.Tournament;
 import lombok.extern.log4j.Log4j2;
 
@@ -45,7 +45,7 @@ public class Endpoint {
 
     @Autowired
     private ModelMapper mapper;
-
+    
     @GetMapping(path = "tournaments", produces = "application/json")
     public List<Tournament> getAll(
             @RequestParam(name = "status", required = false) ProccessingStatus status,

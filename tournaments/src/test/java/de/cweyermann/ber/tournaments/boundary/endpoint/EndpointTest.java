@@ -1,4 +1,4 @@
-package de.cweyermann.ber.tournaments.boundary;
+package de.cweyermann.ber.tournaments.boundary.endpoint;
 
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.is;
@@ -32,7 +32,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import de.cweyermann.ber.tournaments.boundary.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.endpoint.Endpoint;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament;
+import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
 import de.cweyermann.ber.tournaments.entity.Tournament;
 
 @RunWith(SpringRunner.class)

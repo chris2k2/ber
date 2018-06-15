@@ -1,11 +1,13 @@
-package de.cweyermann.ber.tournaments;
+package de.cweyermann.ber.tournaments.boundary.persistence;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,13 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import de.cweyermann.ber.tournaments.boundary.DynmoDbTournament;
-import de.cweyermann.ber.tournaments.boundary.DynmoDbTournament.ProccessingStatus;
-import de.cweyermann.ber.tournaments.boundary.Repository;
+import de.cweyermann.ber.tournaments.LocalDynamoConfig;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { LocalDynamoConfig.class })
-public class RepositoryIntegrationTest {
+public class RepositoryTest {
 
     @Autowired
     private Repository repo;
@@ -61,6 +62,20 @@ public class RepositoryIntegrationTest {
                 .getEndDate();
 
         assertEquals("20180204", FORMAT.format(endDate));
+    }
+    
+    @Test
+    public void findAllSources() throws ParseException
+    {
+        repo.save(tournament("1", "20180201", "1", ProccessingStatus.DONE));
+        repo.save(tournament("2", "20180201", "1", ProccessingStatus.DONE));
+        repo.save(tournament("3", "20180201", "1", ProccessingStatus.DONE));
+        repo.save(tournament("4", "20180201", "1", ProccessingStatus.DONE));
+        repo.save(tournament("5", "20180204", "2", ProccessingStatus.DONE));
+        
+        List<String> sources = repo.findDistinctBySource();
+        
+        assertEquals(Arrays.asList("1", "2"), sources);
     }
 
     public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");

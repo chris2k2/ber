@@ -1,4 +1,4 @@
-package de.cweyermann.ber.tournaments.boundary;
+package de.cweyermann.ber.tournaments.boundary.persistence;
 
 import java.io.Serializable;
 import java.util.Date;
