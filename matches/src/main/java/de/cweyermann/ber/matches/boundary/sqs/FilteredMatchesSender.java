@@ -34,18 +34,20 @@ public class FilteredMatchesSender {
     protected ObjectMapper mapper;
     
     @SqsListener(value = "NewMatches", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
-    @SendTo("AddOldRating2Matches")
+    @SendTo("RateMatches")
     public List<Match> filter(@Payload String matchesString) throws JsonParseException, JsonMappingException, IOException {
         Match[] matchArray = mapper.readValue(matchesString, Match[].class);
         
         io.vavr.collection.List<Match> vavr = io.vavr.collection.List.ofAll(Arrays.asList(matchArray));
 
-        return vavr.map(m -> m.getMatchId()) // [1 ,2]
+        List<Match> res = vavr.map(m -> m.getMatchId()) // [1 ,2]
                 .map(id -> repo.findByMatchId(id)) // [db1, db2]
                 .zip(vavr) // [(db1, t1), (db2, t2)]
                 .filter(x -> (!db(x).isPresent() || dbStatus(x) != DONE)) // [(db1, t1)]
                 .map(tuple -> tuple._2) // [t1]
                 .asJava();
+        
+        return res;
     }
 
     private Status dbStatus(Tuple2<Optional<DynamoDbMatch>, Match> tuple) {
