@@ -86,32 +86,4 @@ public class Endpoint {
 
         return res;
     }
-
-    @PostMapping(path = "tournaments", consumes = "application/json")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void addTournaments(@RequestBody List<Tournament> newTournament) {
-        List<DynmoDbTournament> tournaments = new ArrayList<>();
-
-        for (Tournament t : newTournament) {
-            log.debug("Checking: " + t);
-
-            Optional<DynmoDbTournament> oldOne = repo.findById(t.getId());
-
-            if (!oldOne.isPresent() || oldOne.get().getStatus() != ProccessingStatus.DONE) {
-                tournaments.add(mapper.map(t, DynmoDbTournament.class));
-            }
-        }
-
-        if (!tournaments.isEmpty()) {
-            repo.saveAll(tournaments);
-        }
-
-    }
-
-    @PutMapping(path = "tournaments/{id}", consumes = "application/json")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void update(@RequestBody Tournament updatedTournament, @PathVariable("id") String id) {
-        updatedTournament.setId(id);
-        repo.save(mapper.map(updatedTournament, DynmoDbTournament.class));
-    }
 }

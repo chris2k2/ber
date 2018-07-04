@@ -21,7 +21,7 @@ import lombok.ToString;
 public class DynmoDbTournament {
 
     @Data
-    private static class TournamentId implements Serializable
+    public static class TournamentId implements Serializable
     {
         private static final long serialVersionUID = 839270058975321930L;
 

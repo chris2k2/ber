@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 public class CrawlCommand {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
     private Date lastEndDate;
     

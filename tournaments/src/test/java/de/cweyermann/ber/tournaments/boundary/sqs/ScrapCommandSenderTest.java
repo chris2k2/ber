@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -17,6 +18,7 @@ import de.cweyermann.ber.tournaments.entity.Tournament;
 
 public class ScrapCommandSenderTest {
 
+    private static final Date DEFAULT_DATE = new Date(10000l);
     private ScrapCommandSender sender;
     private Repository repo;
 
@@ -27,11 +29,6 @@ public class ScrapCommandSenderTest {
         sender.repo = repo;
     }
 
-    @Test
-    public void doesnotexistbefore_returned() {
-        expectIsThere(new Tournament());
-    }
-
     private void expectIsThere(Tournament t) {
         assertEquals(Arrays.asList(t), sender.filter(Arrays.asList(t)));
     }
@@ -40,11 +37,12 @@ public class ScrapCommandSenderTest {
     public void existsAndDone_notReturned() {
         Tournament t = new Tournament();
         t.setId("asdf");
+        t.setEndDate(DEFAULT_DATE);
 
         DynmoDbTournament dbT = new DynmoDbTournament();
         dbT.setStatus(ProccessingStatus.DONE);
 
-        when(repo.findById("asdf")).thenReturn(Optional.of(dbT));
+        when(repo.findById("asdf", DEFAULT_DATE)).thenReturn(Optional.of(dbT));
 
         expectIsNotThere(t);
     }
@@ -57,11 +55,12 @@ public class ScrapCommandSenderTest {
     public void existsAndUnprocessed_returned() {
         Tournament t = new Tournament();
         t.setId("asdf");
+        t.setEndDate(DEFAULT_DATE);
 
         DynmoDbTournament dbT = new DynmoDbTournament();
         dbT.setStatus(ProccessingStatus.UNPROCESSED);
 
-        when(repo.findById("asdf")).thenReturn(Optional.of(dbT));
+        when(repo.findById("asdf", DEFAULT_DATE)).thenReturn(Optional.of(dbT));
 
         expectIsThere(t);
     }
@@ -70,9 +69,11 @@ public class ScrapCommandSenderTest {
     public void works4two() {
         Tournament t = new Tournament();
         t.setId("asdf");
+        t.setEndDate(DEFAULT_DATE);
 
         Tournament t2 = new Tournament();
         t2.setId("asdf2");
+        t2.setEndDate(DEFAULT_DATE);
 
         DynmoDbTournament dbT = new DynmoDbTournament();
         dbT.setStatus(ProccessingStatus.UNPROCESSED);
@@ -80,8 +81,8 @@ public class ScrapCommandSenderTest {
         DynmoDbTournament dbT2 = new DynmoDbTournament();
         dbT2.setStatus(ProccessingStatus.UNPROCESSED);
 
-        when(repo.findById("asdf")).thenReturn(Optional.of(dbT));
-        when(repo.findById("asdf2")).thenReturn(Optional.of(dbT2));
+        when(repo.findById("asdf", DEFAULT_DATE)).thenReturn(Optional.of(dbT));
+        when(repo.findById("asdf2", DEFAULT_DATE)).thenReturn(Optional.of(dbT2));
 
         assertEquals(Arrays.asList(t, t2), sender.filter(Arrays.asList(t, t2)));
     }

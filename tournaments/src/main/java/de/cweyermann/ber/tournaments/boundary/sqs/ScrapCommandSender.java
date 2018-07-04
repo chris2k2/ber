@@ -23,15 +23,16 @@ public class ScrapCommandSender {
     @Autowired
     protected Repository repo;
 
-    @SqsListener(value = "NewTournament", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
+    @SqsListener(value = "NewTournaments", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     @SendTo("Scrap")
     public List<Tournament> filter(List<Tournament> tournaments) {
 
         io.vavr.collection.List<Tournament> vavrTournaments = io.vavr.collection.List
                 .ofAll(tournaments);
 
-        return vavrTournaments.map(t -> t.getId()) // [1 ,2]
-                .map(id -> repo.findById(id)) // [db1, db2]
+        return vavrTournaments.filter(t -> t.getEndDate() != null)
+                .filter(t -> t.getId() != null)
+                .map(t -> repo.findById(t.getId(), t.getEndDate())) // [db1, db2]
                 .zip(vavrTournaments) // [(db1, t1), (db2, t2)]
                 .filter(x -> (!db(x).isPresent() || dbStatus(x) != DONE)) // [(db1, t1)]
                 .map(tuple -> tuple._2) // [t1]

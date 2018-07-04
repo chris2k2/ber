@@ -111,59 +111,6 @@ public class EndpointTest {
         assertIdsReturned("?source=s4latest=true", Collections.emptyList());
     }
     
-    @Test
-    public void post() throws Exception
-    {
-        Tournament anObject = new Tournament();
-        anObject.setEndDate(new Date(0));
-        anObject.setId("id");
-        anObject.setName("name");
-        anObject.setSource("source");
-        anObject.setStatus(de.cweyermann.ber.tournaments.entity.Tournament.ProccessingStatus.DONE);
-
-        String requestJson = convert2Json(anObject);
-        
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/tournaments")
-                .content(requestJson)
-                .contentType(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(requestBuilder).andExpect(status().isCreated()).andReturn();
-        
-        DynmoDbTournament dynamoT = new DynmoDbTournament();
-        dynamoT.setEndDate(new Date(0));
-        dynamoT.setId("id");
-        dynamoT.setName("name");
-        dynamoT.setSource("source");
-        dynamoT.setStatus(ProccessingStatus.DONE);
-        
-        verify(repo).saveAll(Arrays.asList(dynamoT));
-    }
-
-    @Test
-    public void post_unprocessedIsIgnore() throws Exception
-    {
-        Tournament anObject = new Tournament();
-        anObject.setEndDate(new Date(0));
-        anObject.setId("id");
-        anObject.setName("name");
-        anObject.setSource("source");
-        de.cweyermann.ber.tournaments.entity.Tournament.ProccessingStatus status = de.cweyermann.ber.tournaments.entity.Tournament.ProccessingStatus.DONE;
-        anObject.setStatus(status);
-    
-        String requestJson = convert2Json(anObject);
-        
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/tournaments")
-                .content(requestJson)
-                .contentType(MediaType.APPLICATION_JSON);
-    
-        DynmoDbTournament dynamoT = defTournament(ProccessingStatus.DONE);
-        when(repo.findById("id")).thenReturn(Optional.of(dynamoT));
-        
-        mockMvc.perform(requestBuilder).andExpect(status().isCreated()).andReturn();
-        
-        verify(repo, times(0)).saveAll(any());
-    }
-
     private String convert2Json(Tournament anObject) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);

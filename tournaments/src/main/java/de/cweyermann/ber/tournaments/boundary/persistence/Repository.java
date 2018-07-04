@@ -9,9 +9,11 @@ import org.socialsignin.spring.data.dynamodb.repository.EnableScan;
 import org.springframework.data.repository.CrudRepository;
 
 import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.TournamentId;
 
 @EnableScan
-public interface Repository extends CrudRepository<DynmoDbTournament, String> {
+public interface Repository
+        extends CrudRepository<DynmoDbTournament, DynmoDbTournament.TournamentId> {
 
     List<DynmoDbTournament> findAll();
 
@@ -50,4 +52,11 @@ public interface Repository extends CrudRepository<DynmoDbTournament, String> {
         return findAll().stream().map(t -> t.getSource()).distinct().collect(Collectors.toList());
     }
 
+    default Optional<DynmoDbTournament> findById(String id, Date endDate) {
+        DynmoDbTournament.TournamentId tid = new TournamentId();
+        tid.setId(id);
+        tid.setEndDate(endDate);
+
+        return findById(tid);
+    }
 }

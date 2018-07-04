@@ -13,6 +13,6 @@ public class CrawlCommandTest {
         CrawlCommand crawlCommand = new CrawlCommand();
         crawlCommand.setLastEndDate(new Date(0));
 
-        assertEquals("19700101", crawlCommand.getNiceLastEndDate());
+        assertEquals("1970-01-01", crawlCommand.getNiceLastEndDate());
     }
 }

@@ -59,9 +59,9 @@ public class CrawlTest {
 
         List<CrawlCommand> commands = crawl.getCommands();
 
-        assertEquals("20180201", commands.get(0).getNiceLastEndDate());
+        assertEquals("2018-02-01", commands.get(0).getNiceLastEndDate());
         assertEquals("source1", commands.get(0).getSource());
-        assertEquals("20180115", commands.get(1).getNiceLastEndDate());
+        assertEquals("2018-01-15", commands.get(1).getNiceLastEndDate());
         assertEquals("source2", commands.get(1).getSource());
     }
 }
