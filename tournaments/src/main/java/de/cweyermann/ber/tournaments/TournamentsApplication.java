@@ -4,12 +4,10 @@ package de.cweyermann.ber.tournaments;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
-@EnableEurekaClient
 @SpringBootApplication
 @EnableScheduling
 public class TournamentsApplication {
