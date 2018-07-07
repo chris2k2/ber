@@ -10,7 +10,7 @@ import lombok.ToString;
 public class Tournament {
 
     public enum ProccessingStatus {
-        DONE, DOING, UNPROCESSED
+        DONE, DOING, ONGOING, UNPROCESSED
     }
 
     private String id;
@@ -22,6 +22,6 @@ public class Tournament {
     private String source;
 
     private Date endDate;
-    
+
     private String type;
 }

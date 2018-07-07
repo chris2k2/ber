@@ -34,7 +34,7 @@ public class DynmoDbTournament {
     
     @DynamoDBTyped(DynamoDBAttributeType.S)
     public enum ProccessingStatus {
-        DONE, DOING, UNPROCESSED
+        DONE, DOING, ONGOING, UNPROCESSED
     }
 
     @Id
