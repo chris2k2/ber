@@ -31,6 +31,8 @@ public interface Repository extends CrudRepository<DynamoDbMatch, String> {
     }
 
     Optional<DynamoDbMatch> findByMatchId(String id);
+    
+    List<DynamoDbMatch> findByMatchIdIn(List<String> ids);
 
     default List<DynamoDbMatch> getAllUnratedMatches() {
         return findByProcessStatus(Status.UNRATED);

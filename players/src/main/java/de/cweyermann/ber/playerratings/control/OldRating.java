@@ -25,28 +25,30 @@ public class OldRating {
         all.addAll(m.getAwayPlayers());
 
         for (Match.Player matchPlayer : all) {
-            Optional<Player> odbPlayer = repo.findById(matchPlayer.getId());
-            if (odbPlayer.isPresent()) {
-                Player dbPlayer = odbPlayer.get();
+            if (matchPlayer.getId() != null) {
+                Optional<Player> odbPlayer = repo.findById(matchPlayer.getId());
+                if (odbPlayer.isPresent()) {
+                    Player dbPlayer = odbPlayer.get();
 
-                Integer rating = null;
-                switch (discipline) {
-                case WD:
-                case MD:
-                    rating = dbPlayer.getRatingDoubles();
-                    break;
-                case WS:
-                case MS:
-                    rating = dbPlayer.getRatingSingles();
-                    break;
-                case MX:
-                    rating = dbPlayer.getRatingMixed();
-                    break;
-                default:
-                    break;
+                    Integer rating = null;
+                    switch (discipline) {
+                    case WD:
+                    case MD:
+                        rating = dbPlayer.getRatingDoubles();
+                        break;
+                    case WS:
+                    case MS:
+                        rating = dbPlayer.getRatingSingles();
+                        break;
+                    case MX:
+                        rating = dbPlayer.getRatingMixed();
+                        break;
+                    default:
+                        break;
+                    }
+
+                    matchPlayer.setOldRating(rating);
                 }
-
-                matchPlayer.setOldRating(rating);
             }
         }
     }

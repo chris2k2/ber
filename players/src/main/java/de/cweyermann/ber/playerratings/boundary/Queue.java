@@ -17,12 +17,12 @@ public class Queue {
 
     @Autowired
     protected RatingFrontend rating;
-    
+
     @SqsListener(value = "RateMatches", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
     @SendTo("RatedMatches")
     public List<Match> rateNewMatches(@Payload List<Match> matches) {
         matches.stream().forEach(m -> rating.singleMatch(m));
-        
+
         return matches;
     }
 }
