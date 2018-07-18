@@ -1,0 +1,1 @@
+document.write('<iframe style="width:728px;height:90px;" src="https://ads.tournamentsoftware.com/html.aspx?id=BAC1F3D6-176D-4A02-95B1-05CA6611C5EE&url=https://ads.tournamentsoftware.com/redirect.aspx%3Fid=BAC1F3D6-176D-4A02-95B1-05CA6611C5EE"></iframe>');

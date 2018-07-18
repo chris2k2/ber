@@ -5,12 +5,22 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "async-request": "^1.2.0",
+    "aws-sdk": "^2.259.1",
+    "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
     "dateformat": "^3.0.3",
+    "eureka-js-client": "^4.4.1",
+    "express": "^4.16.3",
     "hashset": "0.0.6",
     "jsdom": "^11.10.0",
+    "moment": "^2.22.2",
     "puppeteer": "^1.4.0",
-    "request": "^2.85.0"
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "request-promise-native": "^1.0.5",
+    "request-repeat": "^0.0.7",
+    "sqs-consumer": "^3.8.0",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "mocha": "^5.1.1",
@@ -18,6 +28,7 @@
     "fs": "0.0.1-security"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --reporter spec"
+    "test": "./node_modules/.bin/mocha --reporter spec",
+    "start": "node app/aws-start.js"
   }
 }
