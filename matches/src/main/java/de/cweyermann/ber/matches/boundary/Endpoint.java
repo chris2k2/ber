@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +31,7 @@ public class Endpoint {
 
     @Autowired
     private ModelMapper mapper;
-
+    
     @GetMapping("matches/{id}")
     public Match getSingle(@PathVariable("id") String id) {
         Optional<DynamoDbMatch> dto = repo.findById(id);
@@ -58,17 +59,4 @@ public class Endpoint {
     public String ping() {
         return "pong";
     }
-
-    @PostMapping(path = "matches", consumes = "application/json")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void postSingle(@RequestBody List<Match> matches) {
-
-        List<DynamoDbMatch> dynamoMatches = matches.stream()
-                .map(m -> mapper.map(m, DynamoDbMatch.class))
-                .collect(Collectors.toList());
-        dynamoMatches.forEach(m -> m.fillPlayers());
-
-        repo.saveAll(dynamoMatches);
-    }
-
 }

@@ -11,6 +11,8 @@ public class DynamoDbPlayer {
     private String name;
 
     private String id;
+
+    private Integer oldRating;
     
-    private Integer rating;
+    private Integer newRating;
 }
