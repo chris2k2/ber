@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament;
 import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
 import de.cweyermann.ber.tournaments.entity.CrawlCommand;
 
@@ -25,9 +25,9 @@ public class Crawl {
         List<CrawlCommand> crawls = new ArrayList<>();
 
         for (String source : repo.findDistinctBySource()) {
-            Optional<DynmoDbTournament> firstT = repo.findFirstBySourceOrderByEndDateDesc(source);
+            Optional<DynamoDbTournament> firstT = repo.findFirstBySourceOrderByEndDateDesc(source);
             if (firstT.isPresent()) {
-                DynmoDbTournament tournament = firstT.get();
+                DynamoDbTournament tournament = firstT.get();
 
                 CrawlCommand command = new CrawlCommand();
                 command.setLastEndDate(tournament.getEndDate());

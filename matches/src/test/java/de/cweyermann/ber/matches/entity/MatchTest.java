@@ -17,13 +17,13 @@ public class MatchTest {
         
         Match m = new Match();
         
-        String hash1 = m.getMatchId();
-        String matchId1 = mapper.map(m, DynamoDbMatch.class).getMatchId();
+        String hash1 = m.getId();
+        String matchId1 = mapper.map(m, DynamoDbMatch.class).getId();
         
         m.setResult("something");
 
-        String matchId2 = mapper.map(m, DynamoDbMatch.class).getMatchId();
-        String hash2 = m.getMatchId();
+        String matchId2 = mapper.map(m, DynamoDbMatch.class).getId();
+        String hash2 = m.getId();
         
         assertNotEquals(matchId1, matchId2);
         assertEquals(hash1, matchId1);

@@ -28,7 +28,7 @@ public class PersistRankedMatches {
         List<DynamoDbMatch> dynamoMatches = matches.stream()
                 .map(m -> mapper.map(m, DynamoDbMatch.class))
                 .collect(Collectors.toList());
-        dynamoMatches.forEach(m -> m.fillPlayers());
+        dynamoMatches.forEach(m -> m.update());
         dynamoMatches.forEach(m -> m.setProcessStatus(Status.RATED));
 
         repo.saveAll(dynamoMatches);

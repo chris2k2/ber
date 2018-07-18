@@ -8,40 +8,42 @@ import java.util.stream.Collectors;
 import org.socialsignin.spring.data.dynamodb.repository.EnableScan;
 import org.springframework.data.repository.CrudRepository;
 
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.TournamentId;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.TournamentId;
 
 @EnableScan
 public interface Repository
-        extends CrudRepository<DynmoDbTournament, DynmoDbTournament.TournamentId> {
+        extends CrudRepository<DynamoDbTournament, DynamoDbTournament.TournamentId> {
 
-    List<DynmoDbTournament> findAll();
+    List<DynamoDbTournament> findByIdIn(List<String> ids);
+    
+    List<DynamoDbTournament> findAll();
 
-    List<DynmoDbTournament> findAllBySource(String source);
+    List<DynamoDbTournament> findAllBySource(String source);
 
-    List<DynmoDbTournament> findByStatus(ProccessingStatus status);
+    List<DynamoDbTournament> findByStatus(ProccessingStatus status);
 
-    List<DynmoDbTournament> findByStatusAndSource(ProccessingStatus status, String source);
+    List<DynamoDbTournament> findByStatusAndSource(ProccessingStatus status, String source);
 
-    default Optional<DynmoDbTournament> findFirstBySourceAndStatusOrderByEndDateDesc(String source,
+    default Optional<DynamoDbTournament> findFirstBySourceAndStatusOrderByEndDateDesc(String source,
             ProccessingStatus status) {
         return getLatest(findByStatusAndSource(status, source));
     }
 
-    default Optional<DynmoDbTournament> findFirstBySourceOrderByEndDateDesc(String source) {
+    default Optional<DynamoDbTournament> findFirstBySourceOrderByEndDateDesc(String source) {
         return getLatest(findAllBySource(source));
     }
 
-    default Optional<DynmoDbTournament> findFirstByStatusOrderByEndDateDesc(
+    default Optional<DynamoDbTournament> findFirstByStatusOrderByEndDateDesc(
             ProccessingStatus status) {
         return getLatest(findByStatus(status));
     }
 
-    default Optional<DynmoDbTournament> findFirstOrderByEndDateDesc() {
+    default Optional<DynamoDbTournament> findFirstOrderByEndDateDesc() {
         return getLatest(findAll());
     }
 
-    default Optional<DynmoDbTournament> getLatest(List<DynmoDbTournament> tournaments) {
+    default Optional<DynamoDbTournament> getLatest(List<DynamoDbTournament> tournaments) {
         return tournaments.stream()
                 .filter(x -> x.getEndDate().before(new Date()))
                 .sorted((a, b) -> b.getEndDate().compareTo(a.getEndDate()))
@@ -52,8 +54,8 @@ public interface Repository
         return findAll().stream().map(t -> t.getSource()).distinct().collect(Collectors.toList());
     }
 
-    default Optional<DynmoDbTournament> findById(String id, Date endDate) {
-        DynmoDbTournament.TournamentId tid = new TournamentId();
+    default Optional<DynamoDbTournament> findById(String id, Date endDate) {
+        DynamoDbTournament.TournamentId tid = new TournamentId();
         tid.setId(id);
         tid.setEndDate(endDate);
 

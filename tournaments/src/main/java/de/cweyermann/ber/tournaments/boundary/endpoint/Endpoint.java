@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament;
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.ProccessingStatus;
 import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
 import de.cweyermann.ber.tournaments.entity.Tournament;
 import lombok.extern.log4j.Log4j2;
@@ -51,7 +51,7 @@ public class Endpoint {
             @RequestParam(name = "status", required = false) ProccessingStatus status,
             @RequestParam(name = "latest", required = false) Boolean latest,
             @RequestParam(name = "source", required = false) String source) {
-        List<DynmoDbTournament> result = Collections.emptyList();
+        List<DynamoDbTournament> result = Collections.emptyList();
         if (status == null && source == null && latest == null) {
             result = repo.findAll();
         } else if (status != null && source == null && latest == null) {
@@ -71,15 +71,15 @@ public class Endpoint {
         }
 
         List<Tournament> tournaments = new ArrayList<>();
-        for (DynmoDbTournament dynamoT : result) {
+        for (DynamoDbTournament dynamoT : result) {
             tournaments.add(mapper.map(dynamoT, Tournament.class));
         }
 
         return tournaments;
     }
 
-    private List<DynmoDbTournament> toList(Optional<DynmoDbTournament> opt) {
-        List<DynmoDbTournament> res = new ArrayList<>();
+    private List<DynamoDbTournament> toList(Optional<DynamoDbTournament> opt) {
+        List<DynamoDbTournament> res = new ArrayList<>();
         if (opt.isPresent()) {
             res = Arrays.asList(opt.get());
         }

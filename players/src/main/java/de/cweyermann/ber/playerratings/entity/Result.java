@@ -4,7 +4,8 @@ public enum Result {
     HOME_3_SET, HOME_2_SET, AWAY_3_SET, AWAY_2_SET, NO_RESULT;
 
     public static Result fromResultString(String result) {
-
+        result = result.replaceAll("[-]", ":");
+        
         int homeSets = 0;
         int awaySets = 0;
 
@@ -22,9 +23,13 @@ public enum Result {
         }
 
         Result res = null;
-        if (homeSets > awaySets) {
+        if (homeSets > awaySets && awaySets == 0) {
+            res = Result.HOME_2_SET;
+        } else if (homeSets > awaySets && awaySets > 0) {
             res = Result.HOME_3_SET;
-        } else {
+        } else if (homeSets < awaySets && homeSets == 0) {
+            res = Result.AWAY_2_SET;
+        } else if (homeSets < awaySets && homeSets > 0) {
             res = Result.AWAY_3_SET;
         }
 

@@ -12,4 +12,6 @@ public class QueueError
     String reason;
     
     Date time;
+    
+    String component;
 }

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +24,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.cweyermann.ber.matches.boundary.persistence.DynamoDbMatch;
-import de.cweyermann.ber.matches.boundary.persistence.DynamoDbMatch.Status;
 import de.cweyermann.ber.matches.boundary.persistence.Repository;
+import de.cweyermann.ber.matches.boundary.persistence.DynamoDbMatch.Status;
 import de.cweyermann.ber.matches.entity.Match;
 import io.vavr.Tuple2;
 import lombok.extern.log4j.Log4j2;
@@ -34,8 +33,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Component
 public class FilteredMatchesSender {
-
-    private static final Status DONE = Status.RATED;
 
     @Autowired
     protected Repository repo;
@@ -55,58 +52,69 @@ public class FilteredMatchesSender {
 
             log.info("Processing {} matches", matchArray.length);
 
-            io.vavr.collection.List<Match> vavr = io.vavr.collection.List
-                    .ofAll(Arrays.asList(matchArray));
+            if (matchArray.length > 0) {
+                List<Match> res = filterAlreadyDoneMatches(Arrays.asList(matchArray), repo);
 
-            List<String> ids = vavr.map(m -> m.getMatchId()).asJava();
-
-            // amazon list does not support List Iterator => breaks vavr
-            List<DynamoDbMatch> findByMatchIdIn = new ArrayList<>(repo.findByMatchIdIn(ids));
-
-            Map<String, DynamoDbMatch> id2ObjectNotDone = io.vavr.collection.List
-                    .ofAll(findByMatchIdIn)
-                    .foldLeft(new HashMap<String, DynamoDbMatch>(), this::addToMap);
-
-            List<Match> res = vavr.map(m -> m.getMatchId()) // [1 ,2]
-                    .map(id -> id2ObjectNotDone.get(id)) // [db1, db2]
-                    .zip(vavr) // [(db1, t1), (db2, t2)]
-                    .filter(x -> (x == null || db(x) == null || dbStatus(x) != DONE)) // [(db1, t1)]
-                    .map(tuple -> tuple._2) // [t1]
-                    .asJava();
-
-            log.info("Done... New Matches: " + res.size());
-            return res;
+                log.info("Done... New Matches: " + res.size());
+                return res;
+            }
         } catch (ProvisionedThroughputExceededException e) {
             retry(matchArray, headers);
-            return Collections.emptyList();
         }
 
+        return Collections.emptyList();
     }
 
     private void retry(Object payload, Map<String, Object> headers) {
-        log.warn("Throughput exceeded! Waiting some time (1-60) Seconds and then try again!");
-        int waitingTime = new Random(System.nanoTime()).nextInt(59) + 1;
+        String retryCount = (String) headers.get("retryCount");
+        if (retryCount == null) {
+            retryCount = "0";
+        }
+        int retry = Integer.parseInt(retryCount);
 
+        int waitingTime = new Random(System.nanoTime()).nextInt((retry + 1) * 5) + 1;
+
+        log.info("Throughput exceeded! Retry Count: {}, Random Waiting Time: {}", retryCount,
+                waitingTime);
         try {
             Thread.sleep(waitingTime * 1000);
         } catch (InterruptedException e1) {
             // if u insist...
         }
 
-        String retryCount = (String) headers.get("retryCount");
-        if (retryCount == null) {
-            retryCount = "1";
-        } else {
-            retryCount = (Integer.parseInt(retryCount) + 1) + "";
-        }
-        headers.put("retryCount", retryCount);
-
-        if (Integer.parseInt(retryCount) < 5) {
+        if (retry < 10) {
+            retry++;
+            Map<String, Object> newHeaders = new HashMap<>();
+            newHeaders.putAll(headers);
+            newHeaders.put("retryCount", retry + "");
             queueMessagingTemplate.convertAndSend("NewMatches", payload, headers);
+            log.info("...requeued");
         } else {
             headers.put("reason", "ProvisionedThroughputExceededException");
             queueMessagingTemplate.convertAndSend("DeadLetters", payload, headers);
         }
+    }
+
+    private List<Match> filterAlreadyDoneMatches(List<Match> matches, Repository repo) {
+        io.vavr.collection.List<Match> vavr = io.vavr.collection.List.ofAll(matches);
+
+        List<String> ids = vavr.map(m -> m.getId()).asJava();
+
+        // amazon list does not support List Iterator => breaks vavr
+        List<DynamoDbMatch> findByMatchIdIn = new ArrayList<>(repo.findByIdIn(ids));
+
+        Map<String, DynamoDbMatch> id2ObjectNotDone = io.vavr.collection.List.ofAll(findByMatchIdIn)
+                .foldLeft(new HashMap<String, DynamoDbMatch>(), this::addToMap);
+
+        List<Match> res = vavr.map(m -> m.getId()) // [1 ,2]
+                .map(id -> id2ObjectNotDone.get(id)) // [db1, db2]
+                .zip(vavr) // [(db1, t1), (db2, t2)]
+                .filter(x -> (x == null || db(x) == null || dbStatus(x) != Status.RATED)) // [(db1,
+                // t1)]
+                .map(tuple -> tuple._2) // [t1]
+                .asJava();
+        
+        return res;
     }
 
     private HashMap<String, DynamoDbMatch> addToMap(HashMap<String, DynamoDbMatch> old,

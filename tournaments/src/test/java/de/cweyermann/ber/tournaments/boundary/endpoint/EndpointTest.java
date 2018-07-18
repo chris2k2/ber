@@ -33,9 +33,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import de.cweyermann.ber.tournaments.boundary.endpoint.Endpoint;
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament;
 import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.ProccessingStatus;
 import de.cweyermann.ber.tournaments.entity.Tournament;
 
 @RunWith(SpringRunner.class)
@@ -120,8 +120,8 @@ public class EndpointTest {
     }
     
     
-    private DynmoDbTournament defTournament(ProccessingStatus done) {
-        DynmoDbTournament dynamoT = new DynmoDbTournament();
+    private DynamoDbTournament defTournament(ProccessingStatus done) {
+        DynamoDbTournament dynamoT = new DynamoDbTournament();
         dynamoT.setEndDate(new Date(0));
         dynamoT.setId("id");
         dynamoT.setName("name");
@@ -151,12 +151,12 @@ public class EndpointTest {
     }
 
     private void mockDefaultDataSet() throws ParseException {
-        DynmoDbTournament t1 = tournament("1", "20160101", "s1", ProccessingStatus.DONE);
-        DynmoDbTournament t2 = tournament("2", "20160103", "s1", ProccessingStatus.DONE);
-        DynmoDbTournament t3 = tournament("3", "20160109", "s1", ProccessingStatus.DOING);
-        DynmoDbTournament t4 = tournament("4", "20160104", "s2", ProccessingStatus.DONE);
-        DynmoDbTournament t5 = tournament("5", "20160112", "s3", ProccessingStatus.UNPROCESSED);
-        DynmoDbTournament t6 = tournament("6", "20190112", "s4", ProccessingStatus.DONE);
+        DynamoDbTournament t1 = tournament("1", "20160101", "s1", ProccessingStatus.DONE);
+        DynamoDbTournament t2 = tournament("2", "20160103", "s1", ProccessingStatus.DONE);
+        DynamoDbTournament t3 = tournament("3", "20160109", "s1", ProccessingStatus.DOING);
+        DynamoDbTournament t4 = tournament("4", "20160104", "s2", ProccessingStatus.DONE);
+        DynamoDbTournament t5 = tournament("5", "20160112", "s3", ProccessingStatus.UNPROCESSED);
+        DynamoDbTournament t6 = tournament("6", "20190112", "s4", ProccessingStatus.DONE);
 
         when(repo.findAll()).thenReturn(Arrays.asList(t1, t2, t3, t4, t5));
 
@@ -186,9 +186,9 @@ public class EndpointTest {
         when(repo.findAllBySource("s4")).thenReturn(Arrays.asList(t6));
     }
 
-    private DynmoDbTournament tournament(String id, String endDate, String source,
+    private DynamoDbTournament tournament(String id, String endDate, String source,
             ProccessingStatus status) throws ParseException {
-        DynmoDbTournament t1 = new DynmoDbTournament();
+        DynamoDbTournament t1 = new DynamoDbTournament();
         t1.setId(id);
         t1.setEndDate(FORMAT.parse(endDate));
         t1.setStatus(status);

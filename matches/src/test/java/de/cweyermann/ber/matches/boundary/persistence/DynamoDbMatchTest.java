@@ -23,7 +23,7 @@ public class DynamoDbMatchTest {
         match.setHomePlayers(Arrays.asList(player1, player2));
         match.setAwayPlayers(Arrays.asList(player3, player4));
         
-        match.fillPlayers();
+        match.update();
 
         assertEquals("1", match.getPlayer1Id());
         assertEquals("2", match.getPlayer2Id());
@@ -42,7 +42,7 @@ public class DynamoDbMatchTest {
         match.setHomePlayers(Arrays.asList(player1 ));
         match.setAwayPlayers(Arrays.asList(player3));
         
-        match.fillPlayers();
+        match.update();
 
         assertEquals("1", match.getPlayer1Id());
         assertEquals("3", match.getPlayer2Id());
@@ -61,7 +61,7 @@ public class DynamoDbMatchTest {
         match.setHomePlayers(Arrays.asList(player1 ));
         match.setAwayPlayers(Arrays.asList(player3, player3));
         
-        match.fillPlayers();
+        match.update();
 
         assertEquals(null, match.getPlayer1Id());
         assertEquals(null, match.getPlayer2Id());

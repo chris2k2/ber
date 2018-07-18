@@ -18,7 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import de.cweyermann.ber.tournaments.LocalDynamoConfig;
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament.ProccessingStatus;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.ProccessingStatus;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { LocalDynamoConfig.class })
@@ -68,9 +68,9 @@ public class RepositoryTest {
 
     @Test
     public void findById() throws ParseException {
-        DynmoDbTournament tournament = tournament("1", "20180201", "asdf", ProccessingStatus.DONE);
+        DynamoDbTournament tournament = tournament("1", "20180201", "asdf", ProccessingStatus.DONE);
         repo.save(tournament);
-        DynmoDbTournament.TournamentId id = new DynmoDbTournament.TournamentId();
+        DynamoDbTournament.TournamentId id = new DynamoDbTournament.TournamentId();
         id.setId("1");
         id.setEndDate(null);
         
@@ -92,9 +92,9 @@ public class RepositoryTest {
 
     public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
-    public static DynmoDbTournament tournament(String id, String endDate, String source,
+    public static DynamoDbTournament tournament(String id, String endDate, String source,
             ProccessingStatus status) throws ParseException {
-        DynmoDbTournament t1 = new DynmoDbTournament();
+        DynamoDbTournament t1 = new DynamoDbTournament();
         t1.setId(id);
         t1.setEndDate(FORMAT.parse(endDate));
         t1.setStatus(status);

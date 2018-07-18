@@ -38,7 +38,8 @@ public class CrawlCommandScheduler {
     @Autowired
     private Crawl crawl;
 
-    @Scheduled(fixedRate = 500000)
+    // monday-friday at 1:00:00 am
+    @Scheduled(cron = "0 0 1 * * 1-5")
     public void reportCurrentTime() {
         try {
             List<CrawlCommand> commands = crawl.getCommands();
@@ -48,10 +49,11 @@ public class CrawlCommandScheduler {
                 queueMessagingTemplate.convertAndSend("Crawl", c);
             }
         } catch (Exception e) {
-            CrawlError error = new CrawlError();
+            QueueError error = new QueueError();
             error.stacktrace = ExceptionUtils.getStackTrace(e);
             error.reason = e.getMessage();
             error.time = new Date();
+            error.component = getClass().getName();
 
             queueMessagingTemplate.convertAndSend("DeadLetters", error);
             log.error("Problems at Crawling: " + error);

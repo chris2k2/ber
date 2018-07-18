@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.cweyermann.ber.tournaments.boundary.persistence.DynmoDbTournament;
+import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament;
 import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
 import de.cweyermann.ber.tournaments.entity.CrawlCommand;
 
@@ -38,17 +38,17 @@ public class CrawlTest {
     @Test
     public void threeTournaments2Sources_maxDateEach() throws ParseException
     {
-        DynmoDbTournament t1 = new DynmoDbTournament();
+        DynamoDbTournament t1 = new DynamoDbTournament();
         t1.setId("1");
         t1.setEndDate(FORMAT.parse("20180101"));
         t1.setSource("source1");
 
-        DynmoDbTournament t2 = new DynmoDbTournament();
+        DynamoDbTournament t2 = new DynamoDbTournament();
         t2.setId("2");
         t2.setEndDate(FORMAT.parse("20180201"));
         t2.setSource("source1");
         
-        DynmoDbTournament t3 = new DynmoDbTournament();
+        DynamoDbTournament t3 = new DynamoDbTournament();
         t3.setId("3");
         t3.setEndDate(FORMAT.parse("20180115"));
         t3.setSource("source2");
