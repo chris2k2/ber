@@ -4,13 +4,12 @@ var fs = require("fs");
 
 describe("Tournament Matches Parsing", function () {
     it("shouldCrawl parse a simple match", function (done) {
-        fs.readFile('./scrapper/test/turnierde/matches_min.html', 'utf8', function (err, fileContents) {
+        fs.readFile('./test/turnierde/matches_min.html', 'utf8', function (err, fileContents) {
             if (err) throw err;
             var matches = scrapper.getMatchesFromTournament(fileContents);
 
             expect(matches.length).to.equal(1);
             expect(matches[0].league).to.equal("Pleinfelder Brombachseepokal 2018 (BAY)");
-            expect(matches[0].date).to.equal("7. April 2018 09:15");
             expect(matches[0].homePlayers[0].name).to.equal("Johannes Leinfelder");
             expect(matches[0].homePlayers[1].name).to.equal("Victoria Löhr");
             expect(matches[0].awayPlayers[0].name).to.equal("Reiner Alberter");
@@ -21,11 +20,46 @@ describe("Tournament Matches Parsing", function () {
     });
 });
 
-describe("Tournament Checking", function () {
-    it("shouldCrawl check that player played Augsbuger", function (done) {
-        fs.readFile('./scrapper/test/turnierde/played.html', 'utf8', function (err, fileContents) {
+
+describe("Id Parsing", function () {
+    it("shouldCrawl parse a simple id", function (done) {
+        fs.readFile('./test/turnierde/oneid.html', 'utf8', function (err, fileContents) {
             if (err) throw err;
-            var id = scrapper.played(fileContents, "Augsburger Open 2018");
+            var id = scrapper.getId(fileContents);
+
+            expect(id).to.have.members(["7-37224"]);
+            done();
+        });
+    });
+
+    it("shouldCrawl parse a simple id if twice same", function (done) {
+        fs.readFile('./test/turnierde/sameids.html', 'utf8', function (err, fileContents) {
+            if (err) throw err;
+            var id = scrapper.getId(fileContents);
+
+            expect(id).to.have.members(["7-37224"]);
+            done();
+        });
+    });
+
+
+    it("shouldCrawl separate different ids", function (done) {
+        fs.readFile('./test/turnierde/differentids.html', 'utf8', function (err, fileContents) {
+            if (err) throw err;
+            var id = scrapper.getId(fileContents);
+
+            expect(id).to.have.members(["7-37224", "7-123456"]);
+            done();
+        });
+    });
+
+});
+
+describe("Tournament Checking", function () {
+    it("shouldCrawl check that Christian played Zirndorf", function (done) {
+        fs.readFile('./test/turnierde/playedpleinfeld.html', 'utf8', function (err, fileContents) {
+            if (err) throw err;
+            var id = scrapper.played(fileContents, "3.Zirndorfer Stadtmeisterschaft");
 
             expect(id).to.equal(true);
             done();
@@ -33,33 +67,12 @@ describe("Tournament Checking", function () {
     });
 
 
-    it("shouldCrawl check that player didnt play Bitburger Open", function (done) {
-        fs.readFile('./scrapper/test/turnierde/played.html', 'utf8', function (err, fileContents) {
+    it("shouldCrawl check that Christian didnt play Bitburger Open", function (done) {
+        fs.readFile('./test/turnierde/playedpleinfeld.html', 'utf8', function (err, fileContents) {
             if (err) throw err;
             var id = scrapper.played(fileContents, "Bitburger Open");
 
             expect(id).to.equal(false);
-            done();
-        });
-    });
-
-    it("should check that it is not finished", function(done) {
-        fs.readFile('./scrapper/test/turnierde/notfinished.html', 'utf8', function (err, fileContents) {
-            if (err) throw err;
-            var matches = scrapper.getMatchesFromTournament(fileContents);
-            var finished = scrapper.finished(matches);
-
-            expect(finished).to.equal(false);
-            done();
-        });
-    });
-    it("should check that it is finished", function (done) {
-        fs.readFile('./scrapper/test/turnierde/matches_min.html', 'utf8', function (err, fileContents) {
-            if (err) throw err;
-            var matches = scrapper.getMatchesFromTournament(fileContents);
-            var finished = scrapper.finished(matches);
-
-            expect(finished).to.equal(true);
             done();
         });
     });
@@ -68,11 +81,11 @@ describe("Tournament Checking", function () {
 describe("Teammatch Parsing", function () {
 
     it("should parse a Bundesliga Match", function (done) {
-        fs.readFile('./scrapper/test/turnierde/teammatch.html', 'utf8', function (err, fileContents) {
+        fs.readFile('./test/turnierde/teammatch.html', 'utf8', function (err, fileContents) {
             var matches = scrapper.getMatchesFromTeammatch(fileContents);
 
             expect(matches.length).to.equal(7);
-            expect(matches[2].league).to.equal("1. Bundesliga – (1. BL) – (001) 1. Bundesliga");
+            expect(matches[2].league).to.equal("Bundesligen 2017/18");
             expect(matches[2].date).to.equal("Sa 24.03.2018 14:00");
             expect(matches[2].homePlayers[0].name).to.equal("Roman Zirnwald");
             expect(matches[2].homePlayers[1].name).to.equal("Robert Blair");
@@ -86,17 +99,4 @@ describe("Teammatch Parsing", function () {
             done();
         });
     });
-});
-
-describe("Get IDs", function() {
-   it("should be able to get a simple id", function(done) {
-       fs.readFile('./scrapper/test/turnierde/player.html', 'utf8', function (err, fileContents) {
-           var ids = scrapper.getIds(fileContents);
-
-           expect(ids.length).to.equal(4);
-           //expect(ids).to.equal(["07-038114", "07-038113", "07-037224", "07-WeyermannMarina"]);
-
-           done();
-       });
-   });
 });
