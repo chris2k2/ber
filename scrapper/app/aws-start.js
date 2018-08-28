@@ -10,8 +10,6 @@ var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
 
 require('events').EventEmitter.prototype._maxListeners = 64;
 
-
-
 const crawl = Consumer.create({
     queueUrl: "https://sqs.eu-central-1.amazonaws.com/261784908038/Crawl",
     handleMessage: (message, done) => {
