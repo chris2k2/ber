@@ -114,7 +114,7 @@ public class AwsConfig {
 
     @Bean
     public Elo defaultElo() {
-        return new Elo(EloStrategies.SIMPLE_WIN_LOOSE, EloStrategies.EVERYONE_1000,
+        return new Elo(EloStrategies.SIMPLE_WIN_LOOSE, EloStrategies.EVERYONE_1500,
                 EloStrategies.K_CONST8, EloStrategies.AVERAGE);
     }
 }

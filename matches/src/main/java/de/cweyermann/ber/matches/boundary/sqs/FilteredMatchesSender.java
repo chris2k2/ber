@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
@@ -39,6 +41,9 @@ public class FilteredMatchesSender {
 
     @Autowired
     protected ObjectMapper mapper;
+    
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
@@ -50,12 +55,20 @@ public class FilteredMatchesSender {
         Match[] matchArray = mapper.readValue(matchesString, Match[].class);
         try {
 
-            log.info("Processing {} matches", matchArray.length);
+            log.info("Saving {} matches", matchArray.length);
 
             if (matchArray.length > 0) {
                 List<Match> res = filterAlreadyDoneMatches(Arrays.asList(matchArray), repo);
 
+                
+                List<DynamoDbMatch> dynamoMatches = res.stream()
+                        .map(m -> modelMapper.map(m, DynamoDbMatch.class))
+                        .collect(Collectors.toList());
+                dynamoMatches.forEach(m -> m.update());
+
+                repo.saveAll(dynamoMatches);
                 log.info("Done... New Matches: " + res.size());
+                
                 return res;
             }
         } catch (ProvisionedThroughputExceededException e) {

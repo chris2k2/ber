@@ -37,6 +37,16 @@ public class ResultTest {
         assertResult(Result.AWAY_3_SET, "11:8 0:11 0:11 0:11");
     }
     
+
+    @Test
+    public void invalidInput_noResult() {
+        assertResult(Result.NO_RESULT, "Walkover");
+        assertResult(Result.NO_RESULT, "The empire did nothing wrong");
+        assertResult(Result.NO_RESULT, "kein Ergebnis");
+        assertResult(Result.NO_RESULT, "21:10 21:x");
+    }
+    
+    
     private void assertResult(Result expected, String score) {
         Result result = Result.fromResultString(score);
         assertEquals(expected, result);

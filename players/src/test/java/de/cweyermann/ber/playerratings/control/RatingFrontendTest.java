@@ -33,7 +33,7 @@ public class RatingFrontendTest {
         Match match = playSingles("21:10 21:10");
 
         Elo eloAlgo = new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
+                EloStrategies.EVERYONE_1500, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
         rate(create(eloAlgo), match);
 
         assertTrue(match.getHomePlayers().get(0).getNewRating() > 1000);
@@ -46,7 +46,7 @@ public class RatingFrontendTest {
         Match match = playSingles("21:10 21:23 11:21");
 
         Elo eloAlgo = new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
+                EloStrategies.EVERYONE_1500, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
         rate(create(eloAlgo), match);
 
         assertTrue(match.getHomePlayers().get(0).getNewRating() < 1000);
@@ -59,7 +59,7 @@ public class RatingFrontendTest {
         Match match = playDoubles("21:10 21:23 11:21");
 
         Elo eloAlgo = new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
+                EloStrategies.EVERYONE_1500, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
         
         rate(create(eloAlgo), match);
         
@@ -120,7 +120,7 @@ public class RatingFrontendTest {
         Match match2 = playDoubles("21:10 21:23 21:2");
 
         Elo eloAlgo = new Elo(EloStrategies.SIMPLE_WIN_LOOSE,
-                EloStrategies.EVERYONE_1000, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
+                EloStrategies.EVERYONE_1500, EloStrategies.K_CONST8, EloStrategies.AVERAGE);
         rate(create(eloAlgo), match1, match2);
 
         assertTrue(match1.getHomePlayers().get(0).getNewRating() > 1000);

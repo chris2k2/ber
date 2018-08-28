@@ -33,6 +33,12 @@ public class OldRatingTest {
         addOldRating = new OldRating();
         repo = mock(Repository.class);
         addOldRating.repo = repo;
+        addOldRating.guessDiscipline = new GuessDiscipline() {
+            @Override
+            public Discipline fromMatch(Match m) {
+                return m.getDiscipline();
+            }
+        };
     }
 
     @Test

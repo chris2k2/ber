@@ -1,11 +1,10 @@
 package de.cweyermann.ber.tournaments.boundary.sqs;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
@@ -14,9 +13,10 @@ import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament;
 import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.ProccessingStatus;
-import de.cweyermann.ber.tournaments.boundary.persistence.DynamoDbTournament.TournamentId;
 import de.cweyermann.ber.tournaments.boundary.persistence.Repository;
 import de.cweyermann.ber.tournaments.entity.Tournament;
 import lombok.extern.log4j.Log4j2;
@@ -33,11 +33,17 @@ public class SaveTournaments {
 
     @Autowired
     private ModelMapper mapper;
+    
+    @Autowired
+    protected ObjectMapper objMapper;
+
 
     @SqsListener(value = "NewTournaments", deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
-    public void sendUnprocessed(@Payload List<Tournament> tournaments) {
-
+    public void sendUnprocessed(@Payload String tournamentsString) throws Exception {
         try {
+            Tournament[] tournamentArray = objMapper.readValue(tournamentsString, Tournament[].class);
+            List<Tournament> tournaments = Arrays.asList(tournamentArray);
+            
             log.info("Saving tournaments: {}", tournaments.size());
             List<DynamoDbTournament> tournamentsInDb = new ArrayList<>();
             for (Tournament tournament : tournaments) {

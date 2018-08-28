@@ -65,11 +65,14 @@ public class RatingFrontend {
 
             update(setRating, homeDbPlayer, homeMatchPlayer, oldHomeRating, oldHomeRating + diff);
 
-            Player awayDbPlayer = awayPlayers.get(i);
-            Match.Player awayMatchPlayer = match.getAwayPlayers().get(i);
-            int oldAwayRating = awayRatings.get(i);
+            if (awayPlayers.size() > i) {
+                Player awayDbPlayer = awayPlayers.get(i);
+                Match.Player awayMatchPlayer = match.getAwayPlayers().get(i);
+                int oldAwayRating = awayRatings.get(i);
 
-            update(setRating, awayDbPlayer, awayMatchPlayer, oldAwayRating, oldAwayRating - diff);
+                update(setRating, awayDbPlayer, awayMatchPlayer, oldAwayRating,
+                        oldAwayRating - diff);
+            }
         }
     }
 
@@ -84,9 +87,9 @@ public class RatingFrontend {
     private int calcDifference(Match match, Result res, List<Integer> homeRatings,
             List<Integer> awayRatings) {
         int diff = 0;
-        if (homeRatings.size() == 1) {
+        if (homeRatings.size() == 1 && awayRatings.size() == 1) {
             diff = eloAlgo.calcDifference(homeRatings.get(0), awayRatings.get(0), res, match);
-        } else if (homeRatings.size() == 2) {
+        } else if (homeRatings.size() == 2 && awayRatings.size() == 2) {
             diff = eloAlgo.calcDoublesDifference(homeRatings.get(0), homeRatings.get(1),
                     awayRatings.get(0), awayRatings.get(1), res, match);
         }

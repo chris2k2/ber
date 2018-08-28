@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import de.cweyermann.ber.playerratings.boundary.Repository;
 import de.cweyermann.ber.playerratings.entity.Match;
-import de.cweyermann.ber.playerratings.entity.Player;
 import de.cweyermann.ber.playerratings.entity.Match.Discipline;
+import de.cweyermann.ber.playerratings.entity.Player;
 
 @Component
 public class OldRating {
@@ -18,16 +18,18 @@ public class OldRating {
     @Autowired
     protected Repository repo;
 
+    @Autowired
+    protected GuessDiscipline guessDiscipline;
+
     public void addIfKnown(Match m) {
-        Discipline discipline = m.getDiscipline();
+        Discipline discipline = guessDiscipline.fromMatch(m);
 
         List<Match.Player> all = new ArrayList<>(m.getHomePlayers());
         all.addAll(m.getAwayPlayers());
-
         for (Match.Player matchPlayer : all) {
             if (matchPlayer.getId() != null) {
                 Optional<Player> odbPlayer = repo.findById(matchPlayer.getId());
-                if (odbPlayer.isPresent()) {
+                if (odbPlayer.isPresent() && discipline != null) {
                     Player dbPlayer = odbPlayer.get();
 
                     Integer rating = null;

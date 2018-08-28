@@ -15,11 +15,14 @@ import de.cweyermann.ber.playerratings.entity.Player.Sex;
 @Component
 public class DetectSex {
 
-    private Repository repo;
-
     @Autowired
+    protected Repository repo;
+
     public DetectSex(Repository repo) {
         this.repo = repo;
+    }
+    
+    public DetectSex() {
     }
 
     public Player.Sex fromMatch(String id, Match match) {

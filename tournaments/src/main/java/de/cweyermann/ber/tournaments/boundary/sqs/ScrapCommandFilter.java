@@ -1,6 +1,7 @@
 package de.cweyermann.ber.tournaments.boundary.sqs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -21,6 +22,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ScrapCommandFilter {
 
+    private static final int MINUTES = 1000 * 60;
+
     @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
 
@@ -31,14 +34,15 @@ public class ScrapCommandFilter {
     private ModelMapper mapper;
 
     // monday-friday at 2:00:00 am
-    @Scheduled(cron = "0 0 2 * * 1-5")
+    // @Scheduled(cron = "0 0 2 * * 1-5")
+    @Scheduled(fixedRate = 10 * MINUTES)
     public void sendUnprocessed() {
 
         try {
 
             List<DynamoDbTournament> list = new ArrayList<>();
             list.addAll(repo.findByStatus(ProccessingStatus.UNPROCESSED));
-            list.addAll(repo.findByStatus(ProccessingStatus.ONGOING));
+//            list.addAll(repo.findByStatus(ProccessingStatus.ONGOING));
 
             List<Tournament> tournamentsOut = new ArrayList<>();
             for (DynamoDbTournament tournament : list) {
@@ -46,8 +50,10 @@ public class ScrapCommandFilter {
             }
 
             log.info("Processing {} tournaments", list.size());
-            queueMessagingTemplate.convertAndSend("Scrap", list);
-            log.info("send scrap to Queue");
+            if (list.size() > 10) {
+                queueMessagingTemplate.convertAndSend("Scrap", list.subList(0, 10));
+            }
+            log.info("Sent to Scrap");
         } catch (Exception e) {
             QueueError error = new QueueError();
             error.stacktrace = ExceptionUtils.getStackTrace(e);

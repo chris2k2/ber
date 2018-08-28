@@ -22,6 +22,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Component
 public class CrawlCommandScheduler {
+    private static final int MINUTES = 1000 * 60;
 
     @Data
     public class CrawlError {
@@ -39,7 +40,8 @@ public class CrawlCommandScheduler {
     private Crawl crawl;
 
     // monday-friday at 1:00:00 am
-    @Scheduled(cron = "0 0 1 * * 1-5")
+//    @Scheduled(cron = "0 0 1 * * 1-5")
+    @Scheduled(fixedRate = 120 * MINUTES)
     public void reportCurrentTime() {
         try {
             List<CrawlCommand> commands = crawl.getCommands();

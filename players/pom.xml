@@ -98,6 +98,12 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-aws-messaging</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>de.cweyermann.ber</groupId>
+			<artifactId>matches</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

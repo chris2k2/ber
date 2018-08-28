@@ -21,8 +21,11 @@ public class NewRating {
     @Autowired
     protected Repository repo;
 
+    @Autowired
+    protected GuessDiscipline guessDiscipline;
+
     public void update(Match m) {
-        Discipline discipline = m.getDiscipline();
+        Discipline discipline = guessDiscipline.fromMatch(m);
 
         List<Match.Player> all = new ArrayList<>(m.getHomePlayers());
         all.addAll(m.getAwayPlayers());
@@ -37,27 +40,28 @@ public class NewRating {
 
                 odbPlayer = Optional.of(newPlayer);
             }
-            
             Player dbPlayer = odbPlayer.get();
 
             Integer rating = matchPlayer.getNewRating();
-            switch (discipline) {
-            case WD:
-            case MD:
-                dbPlayer.setRatingDoubles(rating);
-                break;
-            case WS:
-            case MS:
-                dbPlayer.setRatingSingles(rating);
-                break;
-            case MX:
-                dbPlayer.setRatingMixed(rating);
-                break;
-            default:
-                break;
-            }
+            if (discipline != null) {
+                switch (discipline) {
+                case WD:
+                case MD:
+                    dbPlayer.setRatingDoubles(rating);
+                    break;
+                case WS:
+                case MS:
+                    dbPlayer.setRatingSingles(rating);
+                    break;
+                case MX:
+                    dbPlayer.setRatingMixed(rating);
+                    break;
+                default:
+                    break;
+                }
 
-            repo.save(dbPlayer);
+                repo.save(dbPlayer);
+            }
         }
     }
 }

@@ -13,10 +13,10 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class Elo {
-    private ResultStrategy result;
-    private InitStrategy init;
-    private KStrategy kStragey;
-    private DoublesStrategy doublesStrategy;
+    protected ResultStrategy result;
+    protected InitStrategy init;
+    protected KStrategy kStragey;
+    protected DoublesStrategy doublesStrategy;
 
     @FunctionalInterface
     public interface ResultStrategy {
